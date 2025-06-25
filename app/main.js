@@ -1,5 +1,5 @@
 import App from './App'
-let apiAddress = `http://127.0.0.1:14000`;
+let apiAddress = `https://rany.ing`;
 
 // #ifndef VUE3
 import Vue from 'vue'
