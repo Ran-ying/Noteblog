@@ -1,11 +1,20 @@
 <template>
 	<view class="contentPanel">
 		<view class="title">
-			<view>{{ fileItem.name }}</view>
-			<view @click="$emit('sidebarChange')">⬛</view>
+			<view>{{ getName(fileItem.name) }}</view>
+			<view style="cursor: pointer;" @click="$emit('sidebarChange')">⬛</view>
 		</view>
 		<view class="content">
-			<view class="markdown-content" ref="markdownContent" v-html="fileMarkdown"></view>
+			<view v-if="index"
+				style="display: flex; 
+				justify-content: center; 
+				align-items: center; 
+				width: 100%; 
+				height: 100%;
+				font-size: 2em;">
+				Ying, INTP, Programmer
+			</view>
+			<view v-else class="markdown-content" ref="markdownContent" v-html="fileMarkdown"></view>
 		</view>
 	</view>
 </template>
@@ -23,19 +32,25 @@
 			return {
 				fileContent: '',
 				fileMarkdown: '',
+				index: true,
 			};
 		},
 		mounted() {
-			
+
 		},
 		watch: {
 			fileItem(newVal) {
+				this.index = false;
 				if (newVal && newVal.fullPath) {
 					this.getFileContent();
 				}
 			}
 		},
 		methods: {
+			getName(fullName) {
+				if(!fullName) return "";
+				return fullName.split(".")[0];
+			},
 			async getFileContent() {
 				try {
 					const response = await this.$apiPost(`/config/${this.fileItem.fullPath}`, {});
@@ -113,7 +128,7 @@
 	.title {
 		padding: 16px;
 		font-size: 20px;
-		height: 32px;
+		height: 24px;
 		background-color: #323233;
 		display: grid;
 		grid-template-columns: auto 32px;
@@ -123,10 +138,15 @@
 		height: 100%;
 		overflow: auto;
 	}
+	/* 
+	.markdown-content * {
+		font-family: consola;
+	} */
 
 	.markdown-content {
-		max-width: 800px;
+		/* max-width: 800px; */
 		margin: 0 auto;
+		margin: 0 20px;
 		padding: 20px;
 		line-height: 1.6;
 	}
@@ -158,7 +178,7 @@
 	}
 
 	.markdown-content :deep(code) {
-		background: #f6f8fa;
+		background: #323233;
 		padding: 2px 4px;
 		border-radius: 4px;
 	}

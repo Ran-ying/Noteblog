@@ -1,7 +1,8 @@
 <template>
 	<view class="container">
 		<SidebarVue class="sidebarVue" v-show="sidebarStatus" @item-click="onItemClick"></SidebarVue>
-		<ContentVue class="contentVue" :fileItem="fileItem" @sidebarChange="sidebarStatus = !sidebarStatus"></ContentVue>
+		<ContentVue class="contentVue" :fileItem="fileItem" @sidebarChange="sidebarStatus = !sidebarStatus">
+		</ContentVue>
 	</view>
 </template>
 
@@ -16,7 +17,7 @@
 		data() {
 			return {
 				fileItem: "",
-				sidebarStatus: true,
+				sidebarStatus: false,
 			}
 		},
 		onLoad() {
@@ -25,7 +26,7 @@
 			})
 		},
 		methods: {
-			
+
 			onItemClick(item) {
 				//console.log('父组件收到点击：', item.name, item.type, item.fullPath);
 
@@ -41,6 +42,7 @@
 </script>
 
 <style scoped>
+
 	page {
 		height: 100%;
 	}
@@ -52,11 +54,11 @@
 		color: #FFFFFF;
 		display: flex;
 	}
-	
+
 	.sidebarVue {
 		width: 200px;
 	}
-	
+
 	.contentVue {
 		flex: 1;
 	}

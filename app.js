@@ -24,37 +24,67 @@ app.use(`/config/getFileList`, auth, async (req, res) => {
 
 // 递归查询路径是否存在
 function findPathInFileList(fileList, targetPath, parentPath = '') {
-  for (const item of fileList) {
-    // 计算当前项的完整路径
-    const currentPath = (parentPath ? `${parentPath}/${item.name}` : item.name);
+    for (const item of fileList) {
+        // 计算当前项的完整路径
+        const currentPath = (parentPath ? `${parentPath}/${item.name}` : item.name);
 
-    // console.log(currentPath, targetPath)
-    // 如果当前路径匹配目标路径，返回 true
-    if (currentPath === targetPath) {
-      return true;
-    }
+        // console.log(currentPath, targetPath)
+        // 如果当前路径匹配目标路径，返回 true
+        if (currentPath === targetPath) {
+            return true;
+        }
 
-    // 如果是文件夹，递归查询其子文件
-    if (item.type === 'folder' && item.files && item.files.length) {
-      if (findPathInFileList(item.files, targetPath, currentPath)) {
-        return true;
-      }
+        // 如果是文件夹，递归查询其子文件
+        if (item.type === 'folder' && item.files && item.files.length) {
+            if (findPathInFileList(item.files, targetPath, currentPath)) {
+                return true;
+            }
+        }
     }
-  }
-  return false;
+    return false;
 }
 
 app.use('/config/mathjax', express.static('./mathjax'));
+
+app.use(`/config/gitpull`, auth, async (req, res) => {
+    const { exec } = require('child_process');
+    // 执行 git pull
+    function gitPull() {
+        return new Promise((resolve, reject) => {
+            const command = `git -C ${path.join(__dirname, 'Notebook')} pull origin main --force`; // 强制拉取
+            console.log(command)
+
+            exec(command, { env: { ...process.env, GIT_ASKPASS: 'echo' } }, (err, stdout, stderr) => {
+                if (err) {
+                    console.error('git pull 失败:', stderr);
+                    res.send("PULLERR", stderr)
+                    return reject(new Error(stderr));
+                }
+                console.log('git pull 成功:', stdout);
+                res.send("PULLSUC")
+                resolve(stdout);
+            });
+        });
+    }
+
+    if (req.isAuth) {
+        gitPull()
+    }
+    else {
+        res.send("AUTHERR")
+    }
+})
+
 
 app.use(`/config/`, auth, async (req, res) => {
     // 获取完整的请求路径（包括查询参数）
     const fullPath = req.originalUrl;
     // 获取路径部分（不包括查询参数）
     const path = decodeURI(req.path)
-    if(findPathInFileList(await readYaml(false), `${parentPath}${path}`, parentPath) || req.isAuth){
+    if (findPathInFileList(await readYaml(false), `${parentPath}${path}`, parentPath) || req.isAuth) {
         res.send(require("fs").readFileSync(`${parentPath}${path}`, 'utf-8'));
     }
-    else{
+    else {
         res.status(404).send("No File!");
     }
 })

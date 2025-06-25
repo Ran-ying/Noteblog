@@ -64,7 +64,7 @@
 	.title {
 		padding: 16px;
 		font-size: 20px;
-		height: 32px;
+		height: 24px;
 		background-color: #323233;
 	}
 </style>
