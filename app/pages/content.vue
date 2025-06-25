@@ -2,7 +2,7 @@
 	<view class="contentPanel">
 		<view class="title">
 			<view>{{ getName(fileItem.name) }}</view>
-			<view style="cursor: pointer;" @click="$emit('sidebarChange')">⬛</view>
+			<view style="cursor: pointer;" @click="$emit('sidebarChange')">🗂</view>
 		</view>
 		<view class="content">
 			<view v-if="index"
@@ -120,7 +120,8 @@
 
 <style scoped>
 	.contentPanel {
-		height: 100vh;
+		height: 100dvh;
+		fallback: 100vh; /* 旧浏览器回退 */
 		display: grid;
 		grid-template-rows: 64px auto;
 	}
@@ -152,6 +153,10 @@
 	}
 
 	/* Markdown 样式 */
+	.markdown-content :deep(a) {
+		color: #FFF;
+	}
+	
 	.markdown-content :deep(h1) {
 		font-size: 2em;
 		border-bottom: 1px solid #eaecef;

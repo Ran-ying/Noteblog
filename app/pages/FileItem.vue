@@ -1,9 +1,13 @@
 <template>
 	<li>
-		<view :class="['file-item', item.type === 'folder' ? 'folder' : 'file']" @click="handleClick">
-			<text v-if="item.type === 'folder'" class="toggle-icon" @click.stop="toggleExpand">
-				{{ expanded ? '▼' : '▶' }}
+		<view :class="['file-item', item.type === 'folder' ? 'folder' : 'file']" @click="handleClick" @click.stop="toggleExpand">
+			<text v-if="item.type === 'folder'" class="toggle-icon">
+				{{ expanded ? '📂' : '📂'}} 
 			</text>
+			<text v-else class="toggle-icon">
+				{{ '📄' }}
+			</text>
+			<!-- //▼'▶' }} -->
 			{{ item.name }}
 		</view>
 		<ul v-if="item.type === 'folder' && item.files.length && expanded">
@@ -34,7 +38,7 @@
 		setup(props, {
 			emit
 		}) {
-			const expanded = ref(true); // 文件夹默认展开
+			const expanded = ref(false); // 文件夹默认不展开
 
 			const toggleExpand = () => {
 				if (props.item.type === 'folder') {
@@ -75,6 +79,7 @@
 		/* font-size: 28rpx; */
 		display: flex;
 		align-items: center;
+		column-gap: 4px;
 	}
 
 	.folder {
@@ -89,6 +94,7 @@
 	.toggle-icon {
 		font-size: 16px;
 		width: 20px;
+		/* width: 0px; */
 		margin-right: 0px;
 		cursor: pointer;
 	}
