@@ -1,8 +1,7 @@
 <template>
 	<view class="contentPanel">
-		<view class="title">
+		<view class="title" style="cursor: pointer;" @click="$emit('sidebarChange')">
 			<view>{{ getName(fileItem.name) }}</view>
-			<view style="cursor: pointer;" @click="$emit('sidebarChange')">🗂</view>
 		</view>
 		<view class="content">
 			<view v-if="index"
@@ -123,20 +122,20 @@
 		height: 100dvh;
 		fallback: 100vh; /* 旧浏览器回退 */
 		display: grid;
-		grid-template-rows: 64px auto;
+		grid-template-rows: 88px auto;
 	}
 
 	.title {
-		padding: 48px 16px 4px 16px;
+		padding: 48px 16px 16px 40px;
 		font-size: 20px;
 		height: 24px;
 		background-color: #323233;
-		display: grid;
-		grid-template-columns: auto 32px;
+		/* display: grid;
+		grid-template-columns: auto 32px; */
 	}
 
 	.content {
-		height: 100%;
+		height: calc(100dvh - 80px);
 		overflow: auto;
 	}
 	/* 

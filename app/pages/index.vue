@@ -57,6 +57,7 @@
 
 	.sidebarVue {
 		width: 200px;
+		position: absolute;
 	}
 
 	.contentVue {
