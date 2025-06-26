@@ -62,7 +62,7 @@
 	}
 
 	.title {
-		padding: 16px;
+		padding: 48px 16px 4px 16px;
 		font-size: 20px;
 		height: 24px;
 		background-color: #323233;
