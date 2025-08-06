@@ -35,10 +35,11 @@
 			};
 		},
 		mounted() {
-
+			
 		},
 		watch: {
 			fileItem(newVal) {
+				console.log(newVal)
 				this.index = false;
 				if (newVal && newVal.fullPath) {
 					this.getFileContent();

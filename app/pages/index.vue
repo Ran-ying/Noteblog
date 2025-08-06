@@ -25,6 +25,14 @@
 				title: "Ying's Noteblog"
 			})
 		},
+		mounted() {
+			this.fileItem = {
+				fullPath: "README.md",
+				index: 1,
+				name: "",
+				type: "file",
+			}
+		},
 		methods: {
 
 			onItemClick(item) {
