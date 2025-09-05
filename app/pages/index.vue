@@ -2,6 +2,7 @@
 	<view class="container">
 		<SidebarVue class="sidebarVue" v-show="sidebarStatus" @item-click="onItemClick"></SidebarVue>
 		<ContentVue class="contentVue" :fileItem="fileItem" @sidebarChange="sidebarStatus = !sidebarStatus">
+
 		</ContentVue>
 	</view>
 </template>
@@ -50,7 +51,6 @@
 </script>
 
 <style scoped>
-
 	page {
 		height: 100%;
 	}
@@ -66,6 +66,7 @@
 	.sidebarVue {
 		width: 200px;
 		position: absolute;
+		z-index: 100;
 	}
 
 	.contentVue {
