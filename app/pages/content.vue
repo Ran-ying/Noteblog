@@ -4,6 +4,9 @@
 			<!-- <view>{{ getName(fileItem.name) }}</view> -->
 		</view>
 		<view class="content">
+			<scroll-view
+      scroll-y
+      :scroll-into-view="scrollTarget">
 			<view v-if="index" style="display: flex; 
 				justify-content: center; 
 				align-items: center; 
@@ -13,8 +16,9 @@
 				Ying, INTP, Programmer
 			</view>
 			<view v-else class="markdown-content" ref="markdownContent" v-html="fileMarkdown"></view>
+			</scroll-view>
 		</view>
-		<TocVue v-show="tocStatus" class="tocVue" :title="getName(fileItem.name)" :fileTitle="fileTitle"></TocVue>
+		<TocVue v-show="tocStatus" class="tocVue" @scrollTo="scrollTo" :title="getName(fileItem.name)" :fileTitle="fileTitle"></TocVue>
 	</view>
 </template>
 
@@ -38,6 +42,7 @@
 				fileTitle: '',
 				index: true,
 				tocStatus: false,
+				scrollTarget: '',
 			};
 		},
 		mounted() {
@@ -53,6 +58,9 @@
 			}
 		},
 		methods: {
+			scrollTo(target){
+				this.scrollTarget = target;
+			},
 			getName(fullName) {
 				if (!fullName) return "";
 				return fullName.split(".")[0];
@@ -75,32 +83,25 @@
 					});
 				} catch (error) {
 					console.error('获取文件内容失败:', error);
-					this.fileContent = '加载内容出错';
+					this.fileContent = error.message;
 					this.fileMarkdown = marked(this.fileContent);
 				}
 			},
 			processMarkdown(htmlContents, maxLevel = 6) {
 				maxLevel = Math.min(Math.max(1, parseInt(maxLevel) || 6), 6);
 
-				const parser = new DOMParser();
-				const doc = parser.parseFromString(htmlContents, "text/html");
-
+				const headingRegex = new RegExp(`<h([1-${maxLevel}])([^>]*)>([\\s\\S]*?)<\\/h\\1>`, 'gi');
 				const usedIds = new Map();
 				const headings = [];
 
-				// 选择 h1 ~ h{maxLevel}
-				doc.querySelectorAll(
-					Array.from({
-						length: maxLevel
-					}, (_, i) => `h${i + 1}`).join(",")
-				).forEach(h => {
-
-					let title = h.textContent.trim();
+				// 替换并收集
+				const html = htmlContents.replace(headingRegex, (match, level, attrs, innerHTML) => {
+					const title = innerHTML.replace(/<[^>]+>/g, '').trim();
 
 					// 生成安全 id
 					let id = title
-						.replace(/\s+/g, "-") // 空格换成 -
-						.replace(/[`~!@#$%^&*()+=<>?,./:;"'|\\[\]{}]/g, ""); // 去掉常见特殊符号
+						.replace(/\s+/g, "-")
+						.replace(/[`~!@#$%^&*()+=<>?,./:;"'|\\[\]{}]/g, "");
 
 					// 确保唯一
 					if (usedIds.has(id)) {
@@ -111,22 +112,29 @@
 						usedIds.set(id, 1);
 					}
 
-					h.id = id;
 					// 收集 headings
 					headings.push({
 						title,
-						level: Number(h.tagName.toLowerCase().slice(1)), // "h1" ~ "h6"
+						level: Number(level),
 						target: id
 					});
+
+					// 返回带 id 的 h 标签
+					return `<h${level} id="${id}"${attrs}>${innerHTML}</h${level}>`;
 				});
 
-				const minLevel = Math.min(...headings.map(h => Number(h.level)));
-				headings.forEach(h => h.level = Number(h.level) - minLevel);
+				// 归一化 level
+				if (headings.length > 0) {
+					const minLevel = Math.min(...headings.map(h => h.level));
+					headings.forEach(h => h.level = h.level - minLevel);
+				}
+
 				return {
-					html: doc.body.innerHTML, // 带 id 的 html
-					headings // 目录信息
+					html,
+					headings
 				};
 			},
+
 
 			loadMarked() {
 
@@ -185,42 +193,15 @@
 				});
 			},
 			loadMathJaxCDN() {
-				// 动态加载 MathJax CDN
-				const script = document.createElement('script');
-				script.src = `${this.$apiAddress}/config/mathjax/LaTeX.js`;
-				script.async = true;
-				script.id = 'MathJax-script';
-				script.onerror = () => {
-					console.error('MathJax CDN 加载失败');
-					this.mathJaxError = true;
-				};
-				script.onload = () => {
-					// 配置 MathJax
-					window.MathJax = {
-						tex: {
-							inlineMath: [
-								['$', '$'],
-								// ['\\(', '\\)']
-							], // 支持 $...$ 和 \(...\)
-							displayMath: [
-								['$$', '$$'],
-								// ['\\[', '\\]']
-							], // 支持 $$...$$ 和 \[...\]
-							processEscapes: true // 处理 \$ 转义
-						},
-						options: {
-							skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] // 跳过代码块
-						}
-					};
-				};
-				document.head.appendChild(script);
+				  if (window.MathJax && window.MathJax.typesetPromise) {
+				    window.MathJax.typesetPromise();
+				  }
 			},
 		}
 	};
 </script>
 
 <style scoped>
-
 	.tocVue {
 		width: 200px;
 		height: 100dvh;
@@ -323,10 +304,6 @@
 	}
 
 	/* MathJax 公式样式 */
-	.markdown-content :deep(.MathJax) {
-		font-size: 1.1em;
-		color: #333;
-	}
 
 	.markdown-content :deep(.MathJax_Display) {
 		margin: 1em 0;
@@ -335,27 +312,35 @@
 
 	.markdown-content :deep(.MathJax),
 	.markdown-content :deep(.MathJax_Display) {
-		color: white !important;
+		color: white;
 		/* 强制公式为白色 */
 		font-size: 1.1em;
 	}
 	
-	
-		/* 打印页面样式 */
-		@media print {
-			*{
-				color: black !important;
-			}
-			.tocVue, .title {
-				display: none;
-			}
-			.content {
-				width: 100% !important;
-				overflow: visible !important;
-			}
-			.markdown-content :deep(.MathJax),
-			.markdown-content :deep(.MathJax_Display) {
-				color: black !important;
-			}
+	.markdown-content mark :deep(.MathJax, .MathJax_Display) {
+		color: black !important;
+	}
+
+
+	/* 打印页面样式 */
+	@media print {
+		* {
+			color: black !important;
 		}
+
+		.tocVue,
+		.title {
+			display: none;
+		}
+
+		.content {
+			width: 100% !important;
+			overflow: visible !important;
+		}
+
+		.markdown-content :deep(.MathJax),
+		.markdown-content :deep(.MathJax_Display) {
+			color: black !important;
+		}
+	}
 </style>

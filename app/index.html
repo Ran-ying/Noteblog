@@ -18,10 +18,30 @@
 				src: url("/static/consola.ttf");
 			}
 
-			html, body {
+			html,
+			body {
 				font-family: consola;
 			}
 		</style>
+		<script>
+			window.MathJax = {
+				tex: {
+					inlineMath: [
+						['$', '$']
+					], // 行内公式
+					displayMath: [
+						['$$', '$$']
+					], // 块级公式
+					processEscapes: true
+				},
+				options: {
+					skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+				}
+			};
+		</script>
+
+		<script id="MathJax-script" async src="https://rany.ing/config/mathjax/LaTeX.js">
+		</script>
 
 	</head>
 	<body>
